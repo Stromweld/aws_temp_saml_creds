@@ -2,19 +2,20 @@
 
 # Inspired by python script https://awsiammedia.s3.amazonaws.com/public/sample/SAMLAPICLIADFS/0192721658_1562696757_blogversion_samlapi_python3.py
 
-# Install required gems
-gem 'activesupport'
-gem 'aws-sdk-core'
-gem 'clipboard'
-gem 'mechanize'
-
-require 'active_support/core_ext/hash'
-require 'aws-sdk-core'
 require 'base64'
-require 'clipboard'
+require 'bundler/inline'
 require 'io/console'
-require 'mechanize'
 require 'rbconfig'
+
+# Install required gems
+gemfile do
+  source 'https://rubygems.org'
+  gem 'activesupport', require: 'active_support/core_ext/hash'
+  gem 'aws-sdk-core', require: 'aws-sdk-core'
+  gem 'ffi'
+  gem 'clipboard', require: 'clipboard'
+  gem 'mechanize', require: 'mechanize'
+end
 
 def list_resources(resources)
   i = 0
@@ -61,7 +62,7 @@ saml_xml = Hash.from_xml(decoded)
 
 # Get list of AWS roles
 roles_list = saml_xml['Response']['Assertion']['AttributeStatement']['Attribute'].find { |roles| roles['Name'].eql?('https://aws.amazon.com/SAML/Attributes/Role') }
-roles = roles_list['AttributeValue']
+roles = [].push(roles_list['AttributeValue']).flatten
 
 # Select role if multiple are available, autoselect if only one available
 select_role = if roles.empty?
