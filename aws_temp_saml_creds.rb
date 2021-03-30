@@ -60,12 +60,12 @@ decoded = Base64.decode64(saml_assertion)
 saml_xml = Hash.from_xml(decoded)
 
 # Get list of AWS roles
-roles_list = saml_xml["Response"]["Assertion"]["AttributeStatement"]["Attribute"].find { |roles| roles['Name'].eql?('https://aws.amazon.com/SAML/Attributes/Role') }
+roles_list = saml_xml['Response']['Assertion']['AttributeStatement']['Attribute'].find { |roles| roles['Name'].eql?('https://aws.amazon.com/SAML/Attributes/Role') }
 roles = roles_list['AttributeValue']
 
 # Select role if multiple are available, autoselect if only one available
 select_role = if roles.empty?
-                raise "No AWS roles found"
+                raise 'No AWS roles found'
               elsif roles.length < 2
                 roles.first
               else
@@ -79,7 +79,7 @@ aws_response = aws_client.assume_role_with_saml(
     duration_seconds: 3600,
     principal_arn: select_role.split(',')[1],
     role_arn: select_role.split(',')[0],
-    saml_assertion: saml_assertion
+    saml_assertion: saml_assertion,
   }
 ).to_h
 aws_creds = aws_response[:credentials]
@@ -110,7 +110,7 @@ puts "export AWS_SECRET_ACCESS_KEY=\"#{aws_creds[:secret_access_key]}\""
 puts "export AWS_SESSION_TOKEN=\"#{aws_creds[:session_token]}\""
 puts "\n"
 
-puts "Do you want to copy these to the clip board?(y/n)"
+puts 'Do you want to copy these to the clip board?(y/n)'
 exit(0) unless STDIN.gets.chomp.eql?('y')
 
 Clipboard.copy("#{cmd_creds['key']}\r\n#{cmd_creds['secret']}\r\n#{cmd_creds['token']}\r\n")
